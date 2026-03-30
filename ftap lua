@@ -1,1 +1,159 @@
 
+
+Section = Tab:AddSection({
+    Name = "Anti Grabs"
+})
+toggleActiveAntiGrabAndBlobman = false
+autoStruggleCoroutine = nil
+local vu675 = nil
+local vu676 = 10
+local vu677 = 1000
+local vu678 = 10
+vu191 = game:GetService("RunService")
+local vu679 = game:GetService("Players")
+local vu680 = game:GetService("ReplicatedStorage")
+localPlayer = vu679.LocalPlayer
+local v681 = vu680
+CharacterEvents = vu680.WaitForChild(v681, "CharacterEvents")
+local vu682 = CharacterEvents:WaitForChild("Struggle")
+local vu683 = localPlayer:WaitForChild("IsHeld")
+local function vu693()
+    autoStruggleCoroutine = vu191.Heartbeat:Connect(function()
+        local v684 = localPlayer.Character
+        if v684 and v684:FindFirstChild("Head") and v684.Head:FindFirstChild("PartOwner") then
+            vu682:FireServer()
+            vu680.GameCorrectionEvents.StopAllVelocity:FireServer()
+            local v685, v686, v687 = pairs(v684:GetChildren())
+            while true do
+                local v688
+                v687, v688 = v685(v686, v687)
+                if v687 == nil then
+                    break
+                end
+                if v688:IsA("BasePart") then
+                    v688.Anchored = true
+                end
+            end
+            while localPlayer.IsHeld.Value do
+                wait()
+            end
+            local v689, v690, v691 = pairs(v684:GetChildren())
+            while true do
+                local v692
+                v691, v692 = v689(v690, v691)
+                if v691 == nil then
+                    break
+                end
+                if v692:IsA("BasePart") then
+                    v692.Anchored = false
+                end
+            end
+        end
+    end)
+end
+local function vu696()
+    if toggleActiveAntiGrabAndBlobman and vu675 then
+        local v694 = localPlayer.Character
+        local v695 = v694 and v694:FindFirstChild("HumanoidRootPart")
+        if v695 then
+            v695.CFrame = CFrame.new(vu675)
+        end
+    end
+end
+local function v701()
+    if toggleActiveAntiGrabAndBlobman then
+        local v697 = localPlayer.Character
+        local v698 = v697 and v697:FindFirstChild("HumanoidRootPart")
+        if v698 then
+            local v699 = v698.AssemblyLinearVelocity
+            local v700 = (v698.Position - vu675).Magnitude
+            if vu677 < v699.Magnitude and vu676 < v700 then
+                v698.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                v698.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                vu696()
+            end
+        end
+    end
+end
+vu191.RenderStepped:Connect(v701)
+vu683.Changed:Connect(function(p702)
+    if toggleActiveAntiGrabAndBlobman and p702 then
+        local v703 = localPlayer.Character
+        local vu704 = v703 and v703:FindFirstChild("HumanoidRootPart")
+        if vu704 then
+            vu675 = vu704.Position
+            local vu705 = nil
+            vu705 = vu191.RenderStepped:Connect(function()
+                if vu683.Value then
+                    if vu678 < (vu704.Position - vu675).Magnitude then
+                        vu704.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                        vu704.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                        vu682:FireServer(localPlayer)
+                    end
+                else
+                    vu705:Disconnect()
+                end
+            end)
+        end
+    end
+end)
+local function vu712()
+    if toggleActiveAntiGrabAndBlobman then
+        local v706 = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+        local vu707 = v706:FindFirstChildWhichIsA("Humanoid") or v706:WaitForChild("Humanoid")
+        v706:WaitForChild("HumanoidRootPart")
+        local function v710()
+            if vu707.SeatPart and tostring(vu707.SeatPart.Parent) == "CreatureBlobman" then
+                local v708 = vu707:FindFirstChild("RightGrabAnimation")
+                local v709 = vu707:FindFirstChild("LeftGrabAnimation")
+                if v708 then
+                    v70
+
+8.AnimationId = ""
+                end
+                if v709 then
+                    v709.
+
+AnimationId = ""
+                end
+            end
+        end
+        local v711 = vu707
+        vu707.GetPropertyChangedSignal(v711, "SeatPart"):Connect(v710)
+        v710()
+    end
+end
+local function v717()
+    local v713 = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+    local vu714 = v713:FindFirstChildWhichIsA("Humanoid") or v713:WaitForChild("Humanoid")
+    v713:WaitForChild("HumanoidRootPart").ChildAdded:Connect(function(p715)
+        if toggleActiveAntiGrabAndBlobman and p715:IsA("Fire") then
+            p715:Destroy()
+        end
+    end)
+    vu712()
+    vu714.Changed:Connect(function(p716)
+        if toggleActiveAntiGrabAndBlobman and (p716 == "Sit" and (vu714.Sit and (not vu714.SeatPart or tostring(vu714.SeatPart.Parent) ~= "CreatureBlobman"))) and not vu714.SeatPart then
+            vu714:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+            vu714.Sit = false
+        end
+    end)
+end
+v717()
+localPlayer.CharacterAdded:Connect(v717)
+Tab:AddToggle({
+    Name = "Anti-Grab and Anti-Blobman",
+    Default = false,
+    Save = true,
+    Flag = "AutoStruggle",
+    Callback = function(p718)
+        toggleActiveAntiGrabAndBlobman = p718
+        print("Unified Toggle set to:", p718)
+        if p718 then
+            vu693()
+        elseif autoStruggleCoroutine then
+            autoStruggleCoroutine:Disconnect()
+            autoStruggleCoroutine = nil
+        end
+    end
+})
